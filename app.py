@@ -5,21 +5,17 @@ app = Flask(__name__)
 ACCESS_KEY = "abc123"
 MAIN_DOMAIN = "https://copy-main.onrender.com"
 
-# ================= ตรวจ player =================
-def is_player():
+# ================= ตรวจ browser =================
+def is_browser():
     ua = request.headers.get("User-Agent", "").lower()
     accept = request.headers.get("Accept", "").lower()
 
-    if any(x in ua for x in ["wiseplay", "vlc", "exo", "iptv", "okhttp"]):
+    # 🎯 browser แน่ ๆ
+    if "mozilla" in ua or "text/html" in accept:
         return True
-
-    if "application/json" in accept:
-        return True
-
-    if "text/html" in accept or "mozilla" in ua:
-        return False
 
     return False
+
 
 # ================= fake page =================
 def fake_page():
@@ -37,6 +33,7 @@ def fake_page():
     """
     return Response(html, content_type="text/html")
 
+
 # ================= ROOT =================
 @app.route("/")
 def root():
@@ -45,9 +42,11 @@ def root():
     if key != ACCESS_KEY:
         return "Unauthorized", 403
 
-    if not is_player():
+    # 🔥 ถ้าเป็น browser → หลอก
+    if is_browser():
         return fake_page()
 
+    # 🔥 อย่างอื่น (Wiseplay) → JSON
     return jsonify({
         "name": "DUFREE",
         "author": "Zank",
@@ -61,12 +60,14 @@ def root():
         ]
     })
 
+
 # ================= fallback =================
 @app.route("/<path:path>")
 def catch_all(path):
-    if not is_player():
+    if is_browser():
         return fake_page()
     return "Not Found", 404
+
 
 # ================= RUN =================
 if __name__ == "__main__":
