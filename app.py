@@ -3,47 +3,54 @@ from flask import Flask, request, jsonify, redirect
 app = Flask(__name__)
 
 ACCESS_KEY = "abc123"
-MAIN_DOMAIN = "https://copy-main.onrender.com"
+MAIN = "https://copy-main.onrender.com"
 
-def is_player():
+
+def is_browser():
     ua = request.headers.get("User-Agent", "").lower()
+    accept = request.headers.get("Accept", "").lower()
 
-    # 🔥 whitelist player (สำคัญมาก)
-    players = ["wiseplay", "vlc", "exo", "iptv"]
+    # 🔥 ถ้าเป็น browser จริง
+    if "text/html" in accept:
+        return True
 
-    return any(p in ua for p in players)
+    # 🔥 fallback (กันบางเคส)
+    if any(x in ua for x in ["chrome", "safari", "firefox", "mozilla"]):
+        return True
+
+    return False
 
 
 @app.route("/")
 def root():
     key = request.args.get("key")
     if key != ACCESS_KEY:
-        return jsonify({"error": "Unauthorized"}), 403
+        return "403", 403
 
-    # 🔥 ถ้าไม่ใช่ player → เด้ง
-    if not is_player():
+    # 🔥 ถ้าเป็น browser → เด้ง
+    if is_browser():
         return redirect("https://google.com")
 
-    # 🔥 ถ้าเป็น Wiseplay → ให้ JSON ปกติ
+    # 🔥 ถ้าเป็น Wiseplay / Player → ผ่าน
     return jsonify({
         "name": "DUFREE",
         "author": "Zank",
         "image": "https://cdn.dufreeapi.uk/dufreedd.png",
 
-        "url": f"{MAIN_DOMAIN}/home?key={ACCESS_KEY}",
+        "url": f"{MAIN}/home?key={ACCESS_KEY}",
 
         "groups": [
             {
                 "name": "👉 เข้าสู่ระบบ",
-                "url": f"{MAIN_DOMAIN}/home?key={ACCESS_KEY}",
+                "url": f"{MAIN}/home?key={ACCESS_KEY}",
                 "import": False
             }
         ],
 
-        # 🔥 กัน Wiseplay งอแง
+        # 🔥 สำคัญมาก ต้องมี ไม่งั้น Wiseplay บางเครื่องจะไม่โหลด
         "stations": [
             {
-                "name": "✔ Ready",
+                "name": "OK",
                 "import": False
             }
         ]
