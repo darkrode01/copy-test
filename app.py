@@ -10,8 +10,11 @@ def is_browser():
     ua = request.headers.get("User-Agent", "").lower()
     accept = request.headers.get("Accept", "").lower()
 
-    # 🎯 browser แน่ ๆ
-    if "mozilla" in ua or "text/html" in accept:
+    # 🔥 browser แน่นอน
+    if "mozilla" in ua:
+        return True
+
+    if "text/html" in accept:
         return True
 
     return False
@@ -46,7 +49,7 @@ def root():
     if is_browser():
         return fake_page()
 
-    # 🔥 อย่างอื่น (Wiseplay) → JSON
+    # 🔥 ที่เหลือทั้งหมด = Wiseplay / VLC
     return jsonify({
         "name": "DUFREE",
         "author": "Zank",
